@@ -32,7 +32,7 @@ void gt_return(int ret);
 void gt_switch(struct gt_context *old, struct gt_context *new);
 bool gt_yield();
 static void gt_stop();
-int gt_go(void (*function)());
+int gt_create(void (*function)());
 
 void gt_init()
 {
@@ -87,14 +87,13 @@ static void gt_stop() {
 	gt_return(0);
 }
 
-int gt_go(void (*function)())
+int gt_create(void (*function)())
 {
 	struct green_thread *p;
 	for (p = &gt_table[0];; p++) {
 		if (p == &gt_table[s_max_threads]) {
 			return -1;
-		}
-		else if (p->state == Unused) {
+		} else if (p->state == Unused) {
 			break;
 		}
 	}
@@ -126,7 +125,7 @@ void do_work()
 int main()
 {
 	gt_init();
-	gt_go(do_work);
-	gt_go(do_work);
+	gt_create(do_work);
+	gt_create(do_work);
 	gt_return(1);
 }
