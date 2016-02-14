@@ -117,8 +117,8 @@ void do_work()
 	static int x;
 
 	int id = ++x;
-	for (int i = 0; i < 10; i++) {
-		printf("%d %d\n", id, i);
+	for (uint64_t i = 0; i < 10000000; i++) {
+		printf("%d %llu\n", id, i);
 		gt_yield();
 	}
 }
