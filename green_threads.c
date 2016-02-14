@@ -45,8 +45,6 @@ gt_return(int exitValue)
 {
 	if (current_gt != &gt_table[0]) {
 		current_gt->state = Unused;
-		// Free the stack
-		free((void*)(current_gt->context.rsp + 16));
 		gt_yield();
 		assert(!"reachable");
 	}
