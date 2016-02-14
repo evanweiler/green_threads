@@ -5,7 +5,7 @@ endif
 
 CFLAGS = $(APPLE_CCFLAGS) -g -Wall
 
-gttest: gthr.o gtswtch.o
+gt_test: green_threads.o gt_switch.o
 	$(CC) $(APPLE_CCFLAGS) -o $@ $^
 
 .S.o:
@@ -13,4 +13,4 @@ gttest: gthr.o gtswtch.o
 
 .PHONY: clean
 clean:
-	rm -f *.o gttest
+	rm -f *.o gt_test

@@ -5,9 +5,9 @@
 #   %rsi contains the context to switch to.
 #
 
-.globl _gtswtch, gtswtch
-_gtswtch:
-gtswtch:
+.globl _gt_switch, gt_switch
+_gt_switch:
+gt_switch:
 
         mov     %rsp, 0x00(%rdi)
         mov     %r15, 0x08(%rdi)
