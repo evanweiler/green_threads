@@ -58,27 +58,24 @@ gt_return(int exitValue)
 
 bool gt_yield()
 {
-	struct green_thread *p;
-	struct gt_context *old, *new;
-
-	p = current_gt;
-	while (p->state != Ready) {
-		if (++p == &gt_table[s_max_threads]) {
-			p = &gt_table[0];
+	struct green_thread *next_gt = current_gt;
+	while (next_gt->state != Ready) {
+		if (++next_gt == &gt_table[s_max_threads]) {
+			next_gt = &gt_table[0];
 		}
-		if (p == current_gt) {
+		if (next_gt == current_gt) {
 			return false;
 		}
 	}
 
-	if (current_gt->state != Unused)
+	if (current_gt->state != Unused) {
 		current_gt->state = Ready;
-	p->state = Running;
-	old = &current_gt->context;
-	new = &p->context;
-	current_gt = p;
+	}
+	next_gt->state = Running;
 
-	gt_switch(old, new);
+	struct gt_context *old = &current_gt->context;
+	current_gt = next_gt;
+	gt_switch(old, &next_gt->context);
 
 	return true;
 }
