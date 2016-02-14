@@ -25,7 +25,7 @@ struct green_thread {
 };
 
 struct green_thread gt_table[s_max_threads];
-struct green_thread *gt_current;
+struct green_thread *current_gt;
 
 void gt_init();
 void gt_return(int ret);
@@ -36,15 +36,15 @@ int gt_go(void (*function)());
 
 void gt_init()
 {
-	gt_current = &gt_table[0];
-	gt_current->state = Running;
+	current_gt = &gt_table[0];
+	current_gt->state = Running;
 }
 
 void __attribute__((noreturn))
 gt_return(int exitValue)
 {
-	if (gt_current != &gt_table[0]) {
-		gt_current->state = Unused;
+	if (current_gt != &gt_table[0]) {
+		current_gt->state = Unused;
 		gt_yield();
 		assert(!"reachable");
 	}
@@ -61,22 +61,22 @@ bool gt_yield()
 	struct green_thread *p;
 	struct gt_context *old, *new;
 
-	p = gt_current;
+	p = current_gt;
 	while (p->state != Ready) {
 		if (++p == &gt_table[s_max_threads]) {
 			p = &gt_table[0];
 		}
-		if (p == gt_current) {
+		if (p == current_gt) {
 			return false;
 		}
 	}
 
-	if (gt_current->state != Unused)
-		gt_current->state = Ready;
+	if (current_gt->state != Unused)
+		current_gt->state = Ready;
 	p->state = Running;
-	old = &gt_current->context;
+	old = &current_gt->context;
 	new = &p->context;
-	gt_current = p;
+	current_gt = p;
 
 	gt_switch(old, new);
 
