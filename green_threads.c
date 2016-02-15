@@ -30,7 +30,7 @@ struct green_thread *current_gt;
 void gt_init();
 void gt_return(int ret);
 void gt_switch(struct gt_context *old, struct gt_context *new);
-bool gt_yield();
+bool gt_schedule();
 static void gt_stop();
 int gt_create(void (*function)());
 
@@ -45,18 +45,18 @@ gt_return(int exitValue)
 {
 	if (current_gt != &gt_table[0]) {
 		current_gt->state = Unused;
-		gt_yield();
+		gt_schedule();
 		assert(!"reachable");
 	}
 
-	while (gt_yield()) {
+	while (gt_schedule()) {
 		;
 	}
 
 	exit(exitValue);
 }
 
-bool gt_yield()
+bool gt_schedule()
 {
 	struct green_thread *next_gt = current_gt;
 	while (next_gt->state != Ready) {
@@ -115,7 +115,7 @@ void do_work()
 	int id = ++x;
 	for (uint64_t i = 0; i < 10000000; i++) {
 		printf("%d %llu\n", id, i);
-		gt_yield();
+		gt_schedule();
 	}
 }
 
