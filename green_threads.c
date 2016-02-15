@@ -60,7 +60,8 @@ bool gt_schedule()
 {
 	struct green_thread *next_gt = current_gt;
 	while (next_gt->state != Ready) {
-		if (++next_gt == &gt_table[s_max_threads]) {
+		next_gt++;
+		if (next_gt == &gt_table[s_max_threads]) {
 			next_gt = &gt_table[0];
 		}
 		if (next_gt == current_gt) {
