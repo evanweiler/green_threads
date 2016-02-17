@@ -8,6 +8,7 @@
 #define MAX_THREADS 4
 
 static const int s_stack_size = 0x400000;
+static char *s_stack_to_free = NULL;
 
 struct green_thread {
 	struct gt_context {
@@ -24,6 +25,7 @@ struct green_thread {
 		Running,
 		Ready,
 	} state;
+	char *stack;
 };
 
 struct green_thread gt_table[MAX_THREADS];
@@ -76,9 +78,19 @@ bool gt_schedule()
 	}
 	next_gt->state = Running;
 
+	if (current_gt->state == Unused) {
+		s_stack_to_free = current_gt->stack;
+	}
+
 	struct gt_context *old = &current_gt->context;
 	current_gt = next_gt;
 	gt_switch(old, &next_gt->context);
+
+	if (s_stack_to_free) {
+		printf("Freeing stack!\n");
+		free(s_stack_to_free);
+		s_stack_to_free = NULL;
+	}
 
 	return true;
 }
@@ -102,6 +114,7 @@ int gt_create(void (*function)())
 	if (!stack) {
 		return -1;
 	}
+	p->stack = stack;
 
 	*(uint64_t *)&stack[s_stack_size -  8] = (uint64_t)gt_stop;
 	*(uint64_t *)&stack[s_stack_size - 16] = (uint64_t)function;
