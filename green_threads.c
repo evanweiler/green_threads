@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #define MAX_THREADS 4
 
@@ -131,13 +135,34 @@ void do_work()
 	int id = ++x;
 	for (uint64_t i = 0; i < 10000000; i++) {
 		printf("%d %" PRIu64 "\n", id, i);
-		gt_schedule();
 	}
+}
+
+void timer_handler(int signum) {
+	gt_schedule();
 }
 
 int main()
 {
 	gt_init();
+	struct sigaction sa;
+	struct itimerval timer;
+
+	memset (&sa, 0, sizeof (sa));
+	sa.sa_handler = &timer_handler;
+	sa.sa_flags |= SA_NODEFER;
+	sigaction (SIGVTALRM, &sa, NULL);
+
+	timer.it_value.tv_sec = 0;
+	timer.it_value.tv_usec = 50000;
+	timer.it_interval.tv_sec = 0;
+	timer.it_interval.tv_usec = 50000;
+	int timer_status = setitimer(ITIMER_VIRTUAL, &timer, NULL);
+	if(timer_status != 0) {
+		printf("Failed to start scheduling timer.\n");
+		exit(1);
+	}
+
 	gt_create(do_work);
 	gt_create(do_work);
 	gt_return(1);
